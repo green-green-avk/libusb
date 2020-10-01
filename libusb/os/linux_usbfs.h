@@ -171,7 +171,12 @@ struct usbfs_streams {
 
 extern usbi_mutex_static_t linux_hotplug_lock;
 
-#if defined(HAVE_LIBUDEV)
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+int linux_android_helper_get_usbfs_fd(const struct libusb_device *const dev,
+		const int silent);
+int linux_android_helper_start_event_monitor(void);
+int linux_android_helper_stop_event_monitor(void);
+#elif defined(USE_UDEV)
 int linux_udev_start_event_monitor(void);
 int linux_udev_stop_event_monitor(void);
 int linux_udev_scan_devices(struct libusb_context *ctx);

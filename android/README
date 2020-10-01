@@ -4,6 +4,26 @@ libusb for Android
 Building:
 ---------
 
+For https://github.com/green-green-avk/LibUsbManager project:
+-------------------------------------------------------------
+
+Form inside of your PRooted (or other) target environment:
+
+    PKG_NAME=libusb-1.0.23-android-helper-service-patch
+    git clone "https://github.com/green-green-avk/$PKG_NAME"
+    cd "$PKG_NAME"
+
+    ./bootstrap.sh
+    ./configure --prefix=/opt/libusb --enable-android-helper=$APP_ID.libusb
+    make && make install
+
+For details, see:
+* https://green-green-avk.github.io/AnotherTerm-docs/installing-libusb-for-nonrooted-android.html#main_content
+* https://github.com/green-green-avk/AnotherTerm-scripts/blob/master/install-patched-libusb-1.0.23.sh
+
+For old / rooted Android:
+-------------------------
+
 To build libusb for Android do the following:
 
  1. Download the latest NDK from:

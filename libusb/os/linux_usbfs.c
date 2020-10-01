@@ -145,7 +145,7 @@ static int linux_scan_devices(struct libusb_context *ctx);
 static int sysfs_scan_device(struct libusb_context *ctx, const char *devname);
 static int detach_kernel_driver_and_claim(struct libusb_device_handle *, int);
 
-#if !defined(USE_UDEV)
+#if !defined(USE_UDEV) && !defined(USE_ANDROID_LIBUSB_HELPER)
 static int linux_default_scan_devices (struct libusb_context *ctx);
 #endif
 
@@ -212,6 +212,9 @@ static int _open(const char *path, int flags)
 
 static int _get_usbfs_fd(struct libusb_device *dev, mode_t mode, int silent)
 {
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	return linux_android_helper_get_usbfs_fd(dev, silent);
+#else
 	struct libusb_context *ctx = DEVICE_CTX(dev);
 	char path[PATH_MAX];
 	int fd;
@@ -253,6 +256,7 @@ static int _get_usbfs_fd(struct libusb_device *dev, mode_t mode, int silent)
 	if (errno == ENOENT)
 		return LIBUSB_ERROR_NO_DEVICE;
 	return LIBUSB_ERROR_IO;
+#endif
 }
 
 static struct linux_device_priv *_device_priv(struct libusb_device *dev)
@@ -308,6 +312,10 @@ static int check_usb_vfs(const char *dirname)
 
 static const char *find_usbfs_path(void)
 {
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	return "/dev/bus/usb"; /* It is */
+#else
+
 	const char *path = "/dev/bus/usb";
 	const char *ret = NULL;
 
@@ -353,6 +361,8 @@ static const char *find_usbfs_path(void)
 		usbi_dbg("found usbfs at %s", ret);
 
 	return ret;
+
+#endif
 }
 
 /* the monotonic clock is not usable on all systems (e.g. embedded ones often
@@ -474,6 +484,10 @@ static int op_init(struct libusb_context *ctx)
 
 	usbi_dbg("max iso packet length is (likely) %u bytes", max_iso_packet_len);
 
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	sysfs_can_relate_devices = 0;
+	sysfs_has_descriptors = 0;
+#else
 	if (-1 == sysfs_has_descriptors) {
 		/* sysfs descriptors has all descriptors since Linux 2.6.26 */
 		sysfs_has_descriptors = kernel_version_ge(&kversion,2,6,26);
@@ -492,6 +506,7 @@ static int op_init(struct libusb_context *ctx)
 			sysfs_has_descriptors = 0;
 		}
 	}
+#endif
 
 	if (sysfs_can_relate_devices)
 		usbi_dbg("sysfs can relate devices");
@@ -532,7 +547,9 @@ static void op_exit(struct libusb_context *ctx)
 
 static int linux_start_event_monitor(void)
 {
-#if defined(USE_UDEV)
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	return linux_android_helper_start_event_monitor();
+#elif defined(USE_UDEV)
 	return linux_udev_start_event_monitor();
 #elif !defined(__ANDROID__)
 	return linux_netlink_start_event_monitor();
@@ -543,7 +560,9 @@ static int linux_start_event_monitor(void)
 
 static int linux_stop_event_monitor(void)
 {
-#if defined(USE_UDEV)
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	return linux_android_helper_stop_event_monitor();
+#elif defined(USE_UDEV)
 	return linux_udev_stop_event_monitor();
 #elif !defined(__ANDROID__)
 	return linux_netlink_stop_event_monitor();
@@ -554,11 +573,13 @@ static int linux_stop_event_monitor(void)
 
 static int linux_scan_devices(struct libusb_context *ctx)
 {
-	int ret = 0;
+	int ret = LIBUSB_SUCCESS;
 
 	usbi_mutex_static_lock(&linux_hotplug_lock);
 
-#if defined(USE_UDEV)
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	/* Nothing */
+#elif defined(USE_UDEV)
 	ret = linux_udev_scan_devices(ctx);
 #elif !defined(__ANDROID__)
 	ret = linux_default_scan_devices(ctx);
@@ -571,7 +592,9 @@ static int linux_scan_devices(struct libusb_context *ctx)
 
 static void op_hotplug_poll(void)
 {
-#if defined(USE_UDEV)
+#if defined(USE_ANDROID_LIBUSB_HELPER)
+	/* Nothing */
+#elif defined(USE_UDEV)
 	linux_udev_hotplug_poll();
 #elif !defined(__ANDROID__)
 	linux_netlink_hotplug_poll();
@@ -1226,7 +1249,7 @@ void linux_device_disconnected(uint8_t busnum, uint8_t devaddr)
 	usbi_mutex_static_unlock(&active_contexts_lock);
 }
 
-#if !defined(USE_UDEV)
+#if !defined(USE_UDEV) && !defined(USE_ANDROID_LIBUSB_HELPER)
 /* open a bus directory and adds all discovered devices to the context */
 static int usbfs_scan_busdir(struct libusb_context *ctx, uint8_t busnum)
 {
@@ -1329,7 +1352,7 @@ static int sysfs_scan_device(struct libusb_context *ctx, const char *devname)
 		devname);
 }
 
-#if !defined(USE_UDEV)
+#if !defined(USE_UDEV) && !defined(USE_ANDROID_LIBUSB_HELPER)
 static int sysfs_get_device_list(struct libusb_context *ctx)
 {
 	DIR *devices = opendir(SYSFS_DEVICE_PATH);

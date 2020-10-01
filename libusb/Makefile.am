@@ -33,10 +33,14 @@ EXTRA_DIST = $(POSIX_POLL_SRC) $(POSIX_THREADS_SRC) \
 
 if OS_LINUX
 
+if USE_ANDROID_LIBUSB_HELPER
+OS_SRC = $(LINUX_USBFS_SRC) os/linux_android_helper.c
+else
 if USE_UDEV
 OS_SRC = $(LINUX_USBFS_SRC) os/linux_udev.c
 else
 OS_SRC = $(LINUX_USBFS_SRC) os/linux_netlink.c
+endif
 endif
 
 endif

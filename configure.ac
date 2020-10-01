@@ -111,11 +111,22 @@ linux)
 	AC_ARG_ENABLE([udev],
 		[AC_HELP_STRING([--enable-udev], [use udev for device enumeration and hotplug support (recommended) [default=yes]])],
 		[], [enable_udev=yes])
+	AC_ARG_ENABLE([android-helper],
+		[AC_HELP_STRING([--enable-android-helper], [use android helper service for device enumeration and hotplug support (for nonrooted Android) (abstract unix socket name of the service must be provided as an argument ("green_green_avk.anothertermlite.libusb" if omitted)) [default=no]])],
+		[], [])
+	if test "x$enable_android_helper" != x ; then
+		if test "x$enable_android_helper" = xyes ; then
+			enable_android_helper='green_green_avk.anothertermlite.libusb'
+		fi
+		AC_DEFINE_UNQUOTED(USE_ANDROID_LIBUSB_HELPER, ["$enable_android_helper"], [Use android helper service for device enumeration/hotplug])
+		AC_SUBST(USE_ANDROID_LIBUSB_HELPER)
+	else
 		if test "x$enable_udev" = xyes ; then
 			# system has udev. use it or fail!
 			AC_CHECK_HEADERS([libudev.h], [], [AC_MSG_ERROR([udev support requested but libudev header not installed])])
 			AC_CHECK_LIB([udev], [udev_new], [], [AC_MSG_ERROR([udev support requested but libudev not installed])])
 			AC_DEFINE(USE_UDEV, 1, [Use udev for device enumeration/hotplug])
+			AC_SUBST(USE_UDEV)
 		else
 			AC_CHECK_HEADERS([asm/types.h], [], [])
 			AC_CHECK_HEADERS([sys/socket.h linux/netlink.h], [], [AC_MSG_ERROR([Linux netlink headers not found])], [
@@ -125,7 +136,7 @@ linux)
 #include <sys/socket.h>
 ])
 		fi
-		AC_SUBST(USE_UDEV)
+	fi
 
 	if test "x$is_backend_android" != xyes; then
 		THREAD_CFLAGS="-pthread"
@@ -200,6 +211,7 @@ AM_CONDITIONAL(OS_HAIKU, test "x$backend" = xhaiku)
 AM_CONDITIONAL(THREADS_POSIX, test "x$threads" = xposix)
 AM_CONDITIONAL(CREATE_IMPORT_LIB, test "x$create_import_lib" = xyes)
 AM_CONDITIONAL(USE_UDEV, test "x$enable_udev" = xyes)
+AM_CONDITIONAL(USE_ANDROID_LIBUSB_HELPER, test "x$enable_android_helper" != x)
 if test "x$threads" = xposix; then
 	AC_DEFINE(THREADS_POSIX, 1, [Use POSIX Threads])
 fi
