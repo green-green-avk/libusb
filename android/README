@@ -17,7 +17,7 @@ Form inside of your PRooted (or other) target environment:
     ./configure --prefix=/opt/libusb --enable-android-helper=$APP_ID.libusb
     make && make install
 
-For details, see:
+For more details, see:
 * https://green-green-avk.github.io/AnotherTerm-docs/installing-libusb-for-nonrooted-android.html#main_content
 * https://github.com/green-green-avk/AnotherTerm-scripts/blob/master/install-patched-libusb-1.0.23.sh
 

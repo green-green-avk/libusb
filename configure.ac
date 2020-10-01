@@ -112,11 +112,11 @@ linux)
 		[AC_HELP_STRING([--enable-udev], [use udev for device enumeration and hotplug support (recommended) [default=yes]])],
 		[], [enable_udev=yes])
 	AC_ARG_ENABLE([android-helper],
-		[AC_HELP_STRING([--enable-android-helper], [use android helper service for device enumeration and hotplug support (for nonrooted Android) (abstract unix socket name of the service must be provided as an argument ("green_green_avk.anothertermlite.libusb" if omitted)) [default=no]])],
+		[AC_HELP_STRING([--enable-android-helper], [use android helper service for device enumeration and hotplug support (for nonrooted Android) (abstract unix socket name of the service must be provided as an argument ("green_green_avk.anotherterm.libusb" if omitted)) [default=no]])],
 		[], [])
 	if test "x$enable_android_helper" != x ; then
 		if test "x$enable_android_helper" = xyes ; then
-			enable_android_helper='green_green_avk.anothertermlite.libusb'
+			enable_android_helper='green_green_avk.anotherterm.libusb'
 		fi
 		AC_DEFINE_UNQUOTED(USE_ANDROID_LIBUSB_HELPER, ["$enable_android_helper"], [Use android helper service for device enumeration/hotplug])
 		AC_SUBST(USE_ANDROID_LIBUSB_HELPER)

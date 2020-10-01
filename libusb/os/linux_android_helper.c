@@ -22,7 +22,7 @@
 
 /* <=---=> */
 
-/* Hello Musl C (Alpine Linux at least) */
+/* Hello, Musl C! (Alpine Linux at least) */
 
 /* Evaluate EXPRESSION, and repeat as long as it returns -1 with `errno'
    set to EINTR.  */
